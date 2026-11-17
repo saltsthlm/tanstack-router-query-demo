@@ -16,8 +16,9 @@ export async function fetchPosts(): Promise<Post[]> {
   return posts
 }
 
-export async function fetchPost(id: string): Promise<Post | undefined> {
+export async function fetchPost(id: string): Promise<Post | null> {
   console.log('fetchPost', id)
   await delay(500)
-  return posts.find((post) => post.id === id)
+  // TanStack Query does not allow `undefined` as data, so use null for "not found"
+  return posts.find((post) => post.id === id) ?? null
 }

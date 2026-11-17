@@ -1,17 +1,21 @@
 import { createFileRoute, Link, Outlet } from '@tanstack/react-router'
-import { fetchPosts } from '../../posts'
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { postsQueryOptions } from '../../postsQueryOptions'
 
 // Layout route: rendered for every route under /posts.
 // The list stays on the left; the matching child (index.tsx or $postId.tsx)
 // is rendered in the <Outlet /> on the right.
 export const Route = createFileRoute('/posts')({
-  // The router calls the loader before rendering (and when a link is preloaded)
-  loader: fetchPosts,
+  // Fill the Query cache before rendering (and when a link is preloaded).
+  // staleTime 'static' means: use cached data if there is any, only fetch if there is none.
+  loader: ({ context: { queryClient } }) =>
+    queryClient.query({ ...postsQueryOptions, staleTime: 'static' }),
   component: PostsLayout,
 })
 
 function PostsLayout() {
-  const posts = Route.useLoaderData()
+  // Already cached by the loader, so this never suspends on first render
+  const { data: posts } = useSuspenseQuery(postsQueryOptions)
 
   return (
     <div className="layout">
